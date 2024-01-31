@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 // function to calculate factorial
 int factorial(int n)
@@ -54,6 +55,7 @@ int main(int argc, char *argv[])
         else
         {
             // Parent process
+            wait(NULL);
         }
     }
 
