@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
             // Child process
             printf("Child process %d\n", i);
             printf("Factorial of %d is %d\n", i, factorial(i));
-            return 0;
+            exit(0);
         }
         else
         {
