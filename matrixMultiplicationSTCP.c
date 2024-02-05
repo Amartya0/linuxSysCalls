@@ -68,7 +68,7 @@ int main()
     }
     else if (r1 > MAX_SIZE || c1 > MAX_SIZE || r2 > MAX_SIZE || c2 > MAX_SIZE)
     {
-        printf("The maximum size of the matrix is 10.\n");
+        printf("The maximum size of a row or column of a matrix can be 10.\n");
         return 1;
     }
 
