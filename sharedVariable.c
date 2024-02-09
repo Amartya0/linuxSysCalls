@@ -128,17 +128,18 @@ int main()
         }
 
         // Start an infinite loop in the child process
+        // Wait for the signal to proceed
+        sighandler_t chandler;
+        // Signal handler for child process - wakes up the child process from pause() in the main loop
+        chandler = signal(SIGUSR1, childHandler);
+        if (chandler == SIG_ERR)
+        {
+            perror("Signal handler error");
+            exit(1);
+        }
         while (1)
         {
-            // Wait for the signal to proceed
-            sighandler_t chandler;
-            // Signal handler for child process - wakes up the child process from pause() in the main loop
-            chandler = signal(SIGUSR1, childHandler);
-            if (chandler == SIG_ERR)
-            {
-                perror("Signal handler error");
-                exit(1);
-            }
+
             pause();
 
             // Read from shared memory and store in a variable
@@ -166,6 +167,10 @@ int main()
             exit(1);
         }
 
+        // Wait for the signal from the child process
+        sighandler_t phandler;
+        // Signal handler for parent process - wakes up the parent process from pause() in the main loop
+        phandler = signal(SIGUSR2, parentHandler);
         // Start an infinite loop in the parent process
         while (1)
         {
@@ -181,10 +186,6 @@ int main()
             // Notify the child process to continue
             kill(pidFork, SIGUSR1);
 
-            // Wait for the signal from the child process
-            sighandler_t phandler;
-            // Signal handler for parent process - wakes up the parent process from pause() in the main loop
-            phandler = signal(SIGUSR2, parentHandler);
             if (phandler == SIG_ERR)
             {
                 perror("Signal handler error");
