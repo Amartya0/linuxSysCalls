@@ -9,7 +9,7 @@
 #include <time.h>
 
 // store a filepath to use as key
-#define KEY_FILE_PATH "/home/kartos/work/linuxSysCalls/dummy_key.txt"
+#define KEY_FILE_PATH "/home/kartos/work/linuxSysCalls/dummy_shared_memory_key.txt"
 
 // define a structure to hold students' information same as in teacher.c
 typedef struct
