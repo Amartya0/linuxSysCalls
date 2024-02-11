@@ -1,4 +1,4 @@
-// a program that reads from a circuler queue stored in share memory
+// a program that reads from a circular queue stored in share memory
 // synchronized by two semaphores
 
 // including the necessary libraries
@@ -37,15 +37,37 @@ typedef union semun
 void main()
 {
     // local variables
-    int sem_set_id, shm_id, i, data;
+    int sem_set_id, shm_id, i, data, num_already_present_data;
     struct sembuf pop, vop;
     key_t sem_key, shm_key;
     queue *q;
     sem_arg set_sem_arg_blank, set_sem_arg_occupied;
 
-    // initializing the semaphores
-    set_sem_arg_blank.val = SIZE - 1;
-    set_sem_arg_occupied.val = 0;
+    // creating the shared memory
+    shm_key = ftok(SHM_KEY_FILE_PATH, 1);
+    if (shm_key == -1)
+    {
+        perror("ftok");
+        exit(1);
+    }
+    shm_id = shmget(shm_key, sizeof(queue), 0777 | IPC_CREAT);
+    if (shm_id == -1)
+    {
+        perror("shmget");
+        exit(1);
+    }
+    q = (queue *)shmat(shm_id, 0, 0);
+    if (q == (queue *)-1)
+    {
+        perror("shmat");
+        exit(1);
+    }
+
+    // get the difference between the front and rear of the queue
+    num_already_present_data = (q->rear - q->front);
+
+    set_sem_arg_blank.val = SIZE - 1 - num_already_present_data;
+    set_sem_arg_occupied.val = num_already_present_data;
 
     pop.sem_num = 1;
     pop.sem_op = -1;
@@ -62,37 +84,24 @@ void main()
         perror("ftok");
         exit(1);
     }
-    sem_set_id = semget(sem_key, 2, 0666 | IPC_CREAT);
+    sem_set_id = semget(sem_key, 2, 0777 | IPC_CREAT);
     if (sem_set_id == -1)
     {
         perror("semget");
         exit(1);
     }
-    // check id the semaphores are already created
-    // this happens when the producer is created first
-    // and asiigns the values to the semaphores if they are not created
 
-    semctl(sem_set_id, 0, SETVAL, set_sem_arg_blank);
-
-    semctl(sem_set_id, 1, SETVAL, set_sem_arg_occupied);
-
-    // creating the shared memory
-    shm_key = ftok(SHM_KEY_FILE_PATH, 1);
-    if (shm_key == -1)
+    // setting the value of the first semaphore to SIZE
+    if (semctl(sem_set_id, 0, SETVAL, set_sem_arg_blank) == -1)
     {
-        perror("ftok");
+        perror("semctl");
         exit(1);
     }
-    shm_id = shmget(shm_key, sizeof(queue), 0666 | IPC_CREAT);
-    if (shm_id == -1)
+
+    // setting the value of the second semaphore to 0
+    if (semctl(sem_set_id, 1, SETVAL, set_sem_arg_occupied) == -1)
     {
-        perror("shmget");
-        exit(1);
-    }
-    q = (queue *)shmat(shm_id, 0, 0);
-    if (q == (queue *)-1)
-    {
-        perror("shmat");
+        perror("semctl");
         exit(1);
     }
 
