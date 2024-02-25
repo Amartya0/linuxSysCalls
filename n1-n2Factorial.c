@@ -29,14 +29,14 @@ int factorial(int n)
 }
 
 // main function
-int main(int argc, char *argv[])
+void main(int argc, char *argv[])
 {
 
     // check if three arguments are passed
     if (argc != 3)
     {
         printf("Usage: %s <number1> <number2>\n", argv[0]);
-        return 0;
+        exit(-1);
     }
 
     // create a pipe to communicate between processes
@@ -44,11 +44,11 @@ int main(int argc, char *argv[])
     if (pipe(fd) == -1)
     {
         printf("Pipe failed.\n");
-        return 0;
+        exit(-1);
     }
 
     // check if values of n1 and n2 are valid
-    int num, n1, n2, temp;
+    int num, n1, n2, temp, i, prev, fact;
     temp = 0;
     n1 = atoi(argv[1]);
     n2 = atoi(argv[2]);
@@ -56,52 +56,55 @@ int main(int argc, char *argv[])
     if (num < 1)
     {
         printf("Invalid range of numbers.\n");
-        return 0;
+        exit(-1);
     }
     else
     {
         // create num number of child processes
-        for (int i = 0; i < num; i++)
+        for (i = 0; i < num; i++)
         {
             pid_t pid = fork();
+            if (pid < 0)
+            {
+                printf("Fork failed.\n");
+                exit(-1);
+            }
+
             if (pid == 0)
             {
                 // child process
-                // check if 1st child process
-                if (i == 0)
+                if (i == 0) // for the first child process
                 {
                     // close read end of pipe
                     close(fd[0]);
                     // calculate factorial using factorial function
-                    int fact = factorial(n1);
+                    fact = factorial(n1);
                     // print the result and write it to pipe
                     printf("From child %d:\t%d! = %d\n", i + n1, i + n1, fact);
                     write(fd[1], &fact, sizeof(int));
                     // close write end of pipe
                     close(fd[1]);
                 }
-                else if (i == num - 1)
+                else if (i == num - 1) // for the last child process
                 {
                     // read the previous result from pipe
-                    int prev;
                     read(fd[0], &prev, sizeof(int));
                     // close the pipe
                     close(fd[0]);
                     close(fd[1]);
                     // calculate factorial using last result
-                    int fact = prev * (i + n1);
+                    fact = prev * (i + n1);
                     // print the result
                     printf("From child %d:\t%d! = %d\n", i + n1, i + n1, fact);
                 }
                 else
                 {
                     // read the previous result from pipe
-                    int prev;
                     read(fd[0], &prev, sizeof(int));
                     // close read end of pipe
                     close(fd[0]);
                     // calculate factorial using last result
-                    int fact = prev * (i + n1);
+                    fact = prev * (i + n1);
                     // print the result and write it to pipe
                     printf("From child %d:\t%d! = %d\n", i + n1, i + n1, fact);
                     write(fd[1], &fact, sizeof(int));
@@ -120,5 +123,5 @@ int main(int argc, char *argv[])
         }
     }
 
-    return 0;
+    exit(0);
 }

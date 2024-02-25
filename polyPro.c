@@ -18,13 +18,13 @@ int power(int x, int n)
 }
 
 // main function
-int main(int argc, char *argv[])
+void main(int argc, char *argv[])
 {
     // check if at least two arguments are passed
     if (argc < 3)
     {
         printf("Usage: %s <number1> <number2> <number3> ... <numberN>\nAt least two number is required.\n", argv[0]);
-        return 0;
+        exit(-1);
     }
 
     // get the number of terms in the polynomial
@@ -42,7 +42,12 @@ int main(int argc, char *argv[])
     if (n == 1 | x == 0)
     {
         pid_t pid = fork();
-        if (pid == 0)
+        if (pid < 0)
+        {
+            printf("Fork failed.\n");
+            exit(-1);
+        }
+        else if (pid == 0)
         {
             // child process
             printf("Answer: %d\n", atoi(argv[2]));
@@ -66,17 +71,22 @@ int main(int argc, char *argv[])
         if (pipe(fd) == -1)
         {
             printf("Pipe failed.\n");
-            return 0;
+            exit(-1);
         }
 
         // create n number of child processes
         for (int i = 0; i < n; i++)
         {
             pid_t pid = fork();
-            if (pid == 0)
+            if (pid < 0)
+            {
+                printf("Fork failed.\n");
+                exit(-1);
+            }
+            else if (pid == 0)
             {
                 // child process
-                if (i == 0)
+                if (i == 0) // first child process
                 {
                     // close the read end of pipe
                     close(fd[0]);
@@ -89,7 +99,7 @@ int main(int argc, char *argv[])
                     close(fd[1]);
                     exit(0);
                 }
-                else if (i == n - 1)
+                else if (i == n - 1) // last child process
                 {
                     // close the write end of pipe
                     close(fd[1]);
@@ -105,13 +115,13 @@ int main(int argc, char *argv[])
                     printf("Answer: %d\n", result + prev);
                     exit(0);
                 }
-                else
+                else // intermediate child processes
                 {
                     // calculate the (n-i)th term
                     int a = atoi(argv[i + 2]);
                     int result = a * power(x, n - i - 1);
                     // get the summation of all the previous terms from pipe
-                    long int prev;
+                    int prev;
                     read(fd[0], &prev, sizeof(int));
                     // close the read end of pipe
                     close(fd[0]);
@@ -132,4 +142,5 @@ int main(int argc, char *argv[])
             }
         }
     }
+    exit(0);
 }

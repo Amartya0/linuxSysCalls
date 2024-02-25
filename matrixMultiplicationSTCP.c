@@ -121,7 +121,7 @@ int main()
                     exit(1);
                 }
 
-                printf("Child process %d id: %d finished with status %d\n", i * r1 + j + 1, pidFork, status);
+                printf("Child process %d id: %d finished with status %d\n", (i * c2) + j + 1, pidFork, status);
 
                 // Adjust status to get the exact value returned by the child process
                 if (status > 255)

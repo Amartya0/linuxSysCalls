@@ -4,17 +4,12 @@
 
 int main(int argc, char *argv[])
 {
-    // check if two arguments are passed
-    if (argc != 2)
-    {
-        printf("Usage: %s <number>\n", argv[0]);
-        return 0;
-    }
+
     int status;
-    argv[0] = "nFactorial.out";
+    argv[0] = "ls";
     // An interesting observation: This program will still work if we do not update the argv[0] value
 
-    status = execve("/home/kartos/work/linuxSysCalls/nFactorial.out", argv, NULL);
+    status = execve("/bin/ls", argv, NULL);
     // this execve() call will replace the currently running process
     // with the process specified in the first argument
     // the second argument is an array of strings that will be passed

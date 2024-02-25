@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 
 // function to calculate factorial
@@ -30,17 +31,11 @@ int main(int argc, char *argv[])
 {
 
     // check if two arguments are passed
-    if (argc == 1)
+    if (argc != 2)
     {
         printf("Usage: %s <number>\n", argv[0]);
         return 0;
     }
-    else if (argc > 2)
-    {
-        printf("Too many arguments supplied.\n");
-        return 0;
-    }
-
     // create argv[1] number of child processes
     for (int i = 1; i < atoi(argv[1]) + 1; i++)
     {

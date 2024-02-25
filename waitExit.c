@@ -7,13 +7,12 @@
 int main()
 {
     int status;
-    pid_t pid = 0;
-    pid_t p1 = 0;
+    pid_t pid_wait, pid_fork;
 
     printf("Before fork!\n");
 
-    p1 = fork();
-    if (p1 == 0)
+    pid_fork = fork();
+    if (pid_fork == 0)
     {
         /* This part is executed by the child process */
 
@@ -29,15 +28,15 @@ int main()
         // }
 
         getchar(); // I just want to keep the child process alive for one user input for the sake of simplicity
-        exit(255); /* The child process terminates with status 12. Note that 12 is just a number,
-                     this status (12) is communicated to the parent process (in some form),
-                     and the parent process may use it through wait() if it wishes to do so.
-                 */
+        exit(25);  /* The child process terminates with status 12. Note that 12 is just a number,
+                      this status (12) is communicated to the parent process (in some form),
+                      and the parent process may use it through wait() if it wishes to do so.
+                  */
     }
 
     /* This part will be executed only by the parent process */
-    pid = wait(&status);
-    if (pid == -1)
+    pid_wait = wait(&status);
+    if (pid_wait == -1)
     {
         perror("wait");
         exit(1);
@@ -46,8 +45,8 @@ int main()
     {
         status = status / 256;
     }
-    printf("pid = %d status = %d!\n", pid, status);
-    /* The parent process prints the PID of the terminated child (pid)
+    printf("pid_wait = %d status = %d!\n", pid_wait, status);
+    /* The parent process prints the PID of the terminated child (pid_wait)
        and the exit status of the child process (status).
     */
 }

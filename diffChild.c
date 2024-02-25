@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     for (int i = 1; i < argc + 1; i++)
     {
         // If the current argument is the -f flag, execute the specified command along with its arguments in new child process
-        if (strcmp(argv[i], "-f") == 0)
+        if (strcmp(argv[i], "-f") == 0 & filepathsArrayColumnIndex > 0)
         {
 
             // get the filepaths from 0th index and store in a temporary variable

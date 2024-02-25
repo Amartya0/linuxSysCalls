@@ -18,6 +18,7 @@ int main()
     key_t sem_key;
     pid_t pidFork;
     int sem_id;
+
     union semun
     {
         int val;

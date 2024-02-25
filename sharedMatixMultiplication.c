@@ -63,9 +63,9 @@ int main()
     // declare variables
     int r1, c1, r2, c2, i, j, k, choice, shmid, shmdtid, shmctlid;
     matrix matrix1, matrix2;
-    pid_t pidFork[MAX_Columns + 1] = {0};
-    pid_t pidWait[MAX_Columns + 1] = {0};
-    int status[MAX_Columns + 1] = {0};
+    pid_t pidFork[MAX_Columns + 1];
+    pid_t pidWait[MAX_Columns + 1];
+    int status[MAX_Columns + 1];
 
     // Taking input for the dimensions of the matrices
     printf("Enter rows and columns size for the first matrix (maximum %d*%d): ", MAX_Rows, MAX_Columns);
