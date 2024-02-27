@@ -7,11 +7,14 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include <string.h>
 #include <sys/sem.h>
+#include <time.h>
+#include <unistd.h>
 
 #define SIZE 10
-#define SEM_KEY_FILE_PATH "/home/kartos/work/linuxSysCalls/sharedSemaphoreName.txt"
+#define MAX_SLEEP_TIME 5
+#define TERMINATION_CODE -9999
+#define SEM_KEY_FILE_PATH "/home/kartos/work/linuxSysCalls/dummy_semaphore_key.txt"
 #define SHM_KEY_FILE_PATH "/home/kartos/work/linuxSysCalls/dummy_shared_memory_key.txt"
 
 #define P(s) semop(s, &pop, 1)
@@ -31,6 +34,26 @@ typedef union semun
     unsigned short *array;
     struct seminfo *__buf;
 } sem_arg;
+
+// a fuction to clear resources
+void clearResources(int sem_set_id, int shm_id)
+{
+    // removing the semaphore set
+    if (semctl(sem_set_id, 0, IPC_RMID) == -1)
+    {
+        perror("semctl");
+        exit(1);
+    }
+    printf("Semaphore set  with id %d removed.\n", sem_set_id);
+
+    // removing the shared memory segment
+    if (shmctl(shm_id, IPC_RMID, 0) == -1)
+    {
+        perror("shmctl");
+        exit(1);
+    }
+    printf("Shared memory segment with id %d removed.\n", shm_id);
+}
 
 void main()
 {
@@ -63,12 +86,6 @@ void main()
         exit(1);
     }
 
-    // get the difference between the front and rear of the queue
-    num_already_present_data = (q->rear - q->front);
-
-    set_sem_arg_blank.val = SIZE - 1 - num_already_present_data;
-    set_sem_arg_occupied.val = num_already_present_data;
-
     /*Though in most places, consumer has same code as producer, here is the difference:
     AS consumer is reading one value from the queue, and discarding it, it will try to
     decrease the value of the first semaphore (which is the number of empty slots in the queue)
@@ -96,43 +113,33 @@ void main()
         exit(1);
     }
 
-    // check if the semaphore has already been initialized
-    if (semctl(sem_set_id, 0, GETVAL) != -1)
+    printf("Enter %d to clear the resources and exit the program or anything else to continue.\n", TERMINATION_CODE);
+    scanf("%d", &data);
+    if (data == TERMINATION_CODE)
     {
-        // setting the value of the first semaphore to SIZE
-        if (semctl(sem_set_id, 0, SETVAL, set_sem_arg_blank) == -1)
-        {
-            perror("semctl");
-            exit(1);
-        }
+        system("pkill -f producer");
+        clearResources(sem_set_id, shm_id);
+        /*kill all other producer processes also. Again this will only work
+        when the producer process is running with name "producer"*/
+        system("pkill -f consumer");
+
+        exit(0);
     }
-
-    if (semctl(sem_set_id, 1, GETVAL) != -1)
-    {
-        // setting the value of the second semaphore to 0
-        if (semctl(sem_set_id, 1, SETVAL, set_sem_arg_occupied) == -1)
-        {
-            perror("semctl");
-            exit(1);
-        }
-    }
-
-    // reading from the queue
-
+    srand(time(0));
     while (1)
 
     {
+        printf("Ready to consume...\n");
         P(sem_set_id); // decrement the value of the occupied slots
-        printf("Ready to consume: ");
-        getchar(); // just to simplify waiting for user input
         data = q->data[q->front];
         q->front = (q->front + 1) % SIZE;
-        printf("Consumer: %d\n", data);
         V(sem_set_id); // increment the value of the empty slots
+        printf("Consumer: %d\n", data);
+        sleep(rand() % MAX_SLEEP_TIME);
     }
 
     // This part of the code will never be reached
     // I still keep it in case of any unexpected event
-    printf("Unexpected event happened in the producer process.\n");
-    return;
+    printf("Unexpected event happened in the consumer process.\n");
+    exit(1);
 }
