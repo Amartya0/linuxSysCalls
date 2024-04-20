@@ -28,7 +28,7 @@ int main()
         // }
 
         getchar(); // I just want to keep the child process alive for one user input for the sake of simplicity
-        exit(25);  /* The child process terminates with status 12. Note that 12 is just a number,
+        exit(12);  /* The child process terminates with status 12. Note that 12 is just a number,
                       this status (12) is communicated to the parent process (in some form),
                       and the parent process may use it through wait() if it wishes to do so.
                   */
